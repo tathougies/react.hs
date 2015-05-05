@@ -75,11 +75,10 @@ switchE be = Event (\listener ->
                                do readIORef unregisterV >>= id
                                   eNext <- sync $ sample be
                                   unregisterListener' <- _eventRegisterListener eNext listener
-                                  unregisterBehaviorListener' <- _eventRegisterListener (_behaviorUpdates be) (\() -> tell ([], [switchToNewEvent]))
-                                  writeIORef unregisterV (unregisterListener' >> unregisterBehaviorListener')
+                                  writeIORef unregisterV unregisterListener'
                        unregisterBehaviorListener <- _eventRegisterListener (_behaviorUpdates be) (\() -> tell ([], [switchToNewEvent]))
-                       writeIORef unregisterV (unregisterListener >> unregisterBehaviorListener)
-                       return (readIORef unregisterV >>= id))
+                       writeIORef unregisterV unregisterListener
+                       return (readIORef unregisterV >>= id >> unregisterBehaviorListener))
 
 execute :: Event (Moment a) -> React (Event a)
 execute ema = do (registerListener, propagateListeners) <- newEventRegistration
